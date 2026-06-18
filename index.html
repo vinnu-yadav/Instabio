@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>_WEBSITE___BUILDER_</title>
+    <style>
+        /* ── Reset & base ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            background: #0a0a0f;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Cyberpunk background ── */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                /* grid lines */
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+            background-position: center center;
+        }
+
+        /* glitchy scanline overlay */
+        .bg-canvas::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg,
+                    rgba(0, 255, 255, 0.02) 0px,
+                    rgba(255, 0, 255, 0.02) 2px,
+                    transparent 2px,
+                    transparent 6px);
+            pointer-events: none;
+            animation: scanlines 8s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(6px);
+            }
+        }
+
+        /* animated neon orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+            pointer-events: none;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+        .orb--cyan {
+            width: 500px;
+            height: 500px;
+            background: #00f0ff;
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+        .orb--magenta {
+            width: 450px;
+            height: 450px;
+            background: #ff00ff;
+            bottom: -120px;
+            left: -80px;
+            animation-delay: 4s;
+        }
+        .orb--purple {
+            width: 350px;
+            height: 350px;
+            background: #7b2ffc;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 8s;
+            opacity: 0.15;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 40px) scale(0.9);
+            }
+            100% {
+                transform: translate(30px, 20px) scale(1.05);
+            }
+        }
+
+        /* ── Glitch text (title) ── */
+        .glitch-title {
+            position: fixed;
+            top: 300px;
+            left: 43%;
+            transform: translateX(-90%);
+            z-index: 2;
+            font-size: clamp(2rem, 4vw, 4rem);
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #00f0ff;
+            text-shadow:
+                0 0 20px #00f0ff,
+                0 0 60px #00f0ff66,
+                0 0 120px #00f0ff33;
+            font-family: 'Poppins', system-ui, sans-serif;
+            pointer-events: none;
+            animation: glitchText 1s infinite;
+        }
+        .glitch-title span {
+            display: inline-block;
+            animation: glitchSpan 2s infinite;
+        }
+        .glitch-title .pink {
+            color: #ff00ff;
+            text-shadow:
+                0 0 10px #ff00ff,
+                0 0 30px #ff00ff66;
+        }
+
+        @keyframes glitchText {
+            0%,
+            90%,
+            100% {
+                transform: translateX(-50%) skew(0deg);
+            }
+            92% {
+                transform: translateX(calc(-50% + 4px)) skew(2deg);
+            }
+            94% {
+                transform: translateX(calc(-50% - 4px)) skew(-2deg);
+            }
+            96% {
+                transform: translateX(calc(-50% + 2px)) skew(1deg);
+            }
+            98% {
+                transform: translateX(calc(-50% - 2px)) skew(-1deg);
+            }
+        }
+
+        @keyframes glitchSpan {
+            0%,
+            80%,
+            100% {
+                opacity: 1;
+                transform: translate(0);
+            }
+            82% {
+                opacity: 0.8;
+                transform: translate(-3px, 2px);
+            }
+            84% {
+                opacity: 1;
+                transform: translate(3px, -2px);
+            }
+            86% {
+                opacity: 0.9;
+                transform: translate(-2px, 1px);
+            }
+        }
+
+        /* ── Main card / container ── */
+        .card {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            padding: 50px 40px 45px;
+            background: rgba(10, 10, 15, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-radius: 32px;
+            box-shadow:
+                0 0 40px rgba(0, 240, 255, 0.08),
+                inset 0 0 40px rgba(0, 240, 255, 0.03);
+            max-width: 540px;
+            width: 92%;
+            transition: box-shadow 0.4s ease;
+        }
+        .card:hover {
+            box-shadow:
+                0 0 60px rgba(0, 240, 255, 0.12),
+                inset 0 0 60px rgba(255, 0, 255, 0.05);
+        }
+
+        /* decorative corners */
+        .card::before,
+        .card::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-color: #00f0ff;
+            border-style: solid;
+            border-width: 0;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .card::before {
+            top: 12px;
+            left: 12px;
+            border-top-width: 2px;
+            border-left-width: 2px;
+            border-radius: 8px 0 0 0;
+        }
+        .card::after {
+            bottom: 12px;
+            right: 12px;
+            border-bottom-width: 2px;
+            border-right-width: 2px;
+            border-radius: 0 0 8px 0;
+        }
+        .card:hover::before,
+        .card:hover::after {
+            opacity: 0.7;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 22px 20px;
+            border: none;
+            border-radius: 18px;
+            /* soft corners – cuboidal with rounded edges */
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            /* 3D cuboidal effect */
+            transform: perspective(800px) rotateX(2deg) translateZ(0);
+            transform-style: preserve-3d;
+            font-family: 'Poppins', system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        /* button glow & border variants */
+        .btn--cyan {
+            background: linear-gradient(145deg, rgba(0, 240, 255, 0.12), rgba(0, 240, 255, 0.04));
+            border-color: rgba(0, 240, 255, 0.35);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(0, 240, 255, 0.05),
+                inset 0 1px 0 rgba(0, 240, 255, 0.15);
+            color: #b0faff;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+        .btn--cyan:hover {
+            background: linear-gradient(145deg, rgba(0, 240, 255, 0.22), rgba(0, 240, 255, 0.08));
+            border-color: #00f0ff;
+            box-shadow:
+                0 12px 48px rgba(0, 0, 0, 0.6),
+                0 0 60px rgba(0, 240, 255, 0.15),
+                inset 0 1px 0 rgba(0, 240, 255, 0.25);
+            transform: perspective(800px) rotateX(0deg) translateZ(12px) scale(1.02);
+            color: #fff;
+            text-shadow: 0 0 30px #00f0ff;
+        }
+
+        .btn--magenta {
+            background: linear-gradient(145deg, rgba(255, 0, 255, 0.12), rgba(255, 0, 255, 0.04));
+            border-color: rgba(255, 0, 255, 0.35);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(255, 0, 255, 0.05),
+                inset 0 1px 0 rgba(255, 0, 255, 0.15);
+            color: #fbb0ff;
+            text-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+        }
+        .btn--magenta:hover {
+            background: linear-gradient(145deg, rgba(255, 0, 255, 0.22), rgba(255, 0, 255, 0.08));
+            border-color: #ff00ff;
+            box-shadow:
+                0 12px 48px rgba(0, 0, 0, 0.6),
+                0 0 60px rgba(255, 0, 255, 0.15),
+                inset 0 1px 0 rgba(255, 0, 255, 0.25);
+            transform: perspective(800px) rotateX(0deg) translateZ(12px) scale(1.02);
+            color: #fff;
+            text-shadow: 0 0 30px #ff00ff;
+        }
+
+        .btn--purple {
+            background: linear-gradient(145deg, rgba(123, 47, 252, 0.12), rgba(123, 47, 252, 0.04));
+            border-color: rgba(123, 47, 252, 0.35);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(123, 47, 252, 0.05),
+                inset 0 1px 0 rgba(123, 47, 252, 0.15);
+            color: #d4b0ff;
+            text-shadow: 0 0 20px rgba(123, 47, 252, 0.2);
+        }
+        .btn--purple:hover {
+            background: linear-gradient(145deg, rgba(123, 47, 252, 0.22), rgba(123, 47, 252, 0.08));
+            border-color: #7b2ffc;
+            box-shadow:
+                0 12px 48px rgba(0, 0, 0, 0.6),
+                0 0 60px rgba(123, 47, 252, 0.15),
+                inset 0 1px 0 rgba(123, 47, 252, 0.25);
+            transform: perspective(800px) rotateX(0deg) translateZ(12px) scale(1.02);
+            color: #fff;
+            text-shadow: 0 0 30px #7b2ffc;
+        }
+
+        /* icon inside button */
+        .btn-icon {
+            margin-right: 12px;
+            font-size: 1.4em;
+            filter: drop-shadow(0 0 6px currentColor);
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        .btn:hover .btn-icon {
+            opacity: 1;
+        }
+
+        /* small glitch line on button hover */
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.02) 2px,
+                    rgba(255, 255, 255, 0.02) 4px);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .btn:hover::before {
+            opacity: 1;
+            animation: btnScan 1.2s linear infinite;
+        }
+
+        @keyframes btnScan {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .card {
+                padding: 32px 18px 30px;
+                gap: 20px;
+                border-radius: 24px;
+            }
+            .btn {
+                padding: 16px 14px;
+                border-radius: 14px;
+                font-size: 0.95rem;
+            }
+            .btn-icon {
+                margin-right: 8px;
+                font-size: 1.1em;
+            }
+            .card::before,
+            .card::after {
+                width: 28px;
+                height: 28px;
+            }
+            .card::before {
+                top: 8px;
+                left: 8px;
+            }
+            .card::after {
+                bottom: 8px;
+                right: 8px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .card {
+                padding: 24px 12px 22px;
+                gap: 16px;
+            }
+            .btn {
+                padding: 14px 10px;
+                font-size: 0.8rem;
+                border-radius: 12px;
+            }
+            .glitch-title {
+                top: 16px;
+                font-size: 1.6rem;
+                letter-spacing: 3px;
+            }
+        }
+
+        /* ── Floating particles (extra flair) ── */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            background: #00f0ff;
+            opacity: 0.08;
+            animation: particleFloat 18s infinite alternate ease-in-out;
+            z-index: 0;
+        }
+        .particle:nth-child(1) {
+            width: 6px;
+            height: 6px;
+            top: 15%;
+            left: 10%;
+            animation-duration: 22s;
+            background: #ff00ff;
+        }
+        .particle:nth-child(2) {
+            width: 4px;
+            height: 4px;
+            top: 75%;
+            left: 88%;
+            animation-duration: 26s;
+            animation-delay: 3s;
+            background: #00f0ff;
+        }
+        .particle:nth-child(3) {
+            width: 8px;
+            height: 8px;
+            top: 45%;
+            left: 5%;
+            animation-duration: 20s;
+            animation-delay: 6s;
+            background: #7b2ffc;
+        }
+        .particle:nth-child(4) {
+            width: 5px;
+            height: 5px;
+            top: 85%;
+            left: 20%;
+            animation-duration: 24s;
+            animation-delay: 2s;
+            background: #00f0ff;
+        }
+        .particle:nth-child(5) {
+            width: 7px;
+            height: 7px;
+            top: 10%;
+            left: 85%;
+            animation-duration: 28s;
+            animation-delay: 5s;
+            background: #ff00ff;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(80px, -120px) scale(1.6);
+            }
+            50% {
+                transform: translate(-60px, 80px) scale(0.8);
+            }
+            75% {
+                transform: translate(100px, 60px) scale(1.3);
+            }
+            100% {
+                transform: translate(-40px, -80px) scale(1);
+            }
+        }
+
+        /* ── Footer credit (tiny) ── */
+        .credit {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(0, 240, 255, 0.2);
+            font-family: 'Poppins', system-ui, sans-serif;
+            pointer-events: none;
+            transition: color 0.4s ease;
+        }
+        .credit:hover {
+            color: rgba(0, 240, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── Background ─── -->
+    <div class="bg-canvas"></div>
+
+    <!-- orbs -->
+    <div class="orb orb--cyan"></div>
+    <div class="orb orb--magenta"></div>
+    <div class="orb orb--purple"></div>
+
+    <!-- particles -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- ─── Glitch Title ─── -->
+    <div class="glitch-title">
+        <span>_WEBSITE___BUILDER_</span><span class="pink"></span>
+    </div>
+
+    <!-- ─── Main Card ─── -->
+   <div class="card">
+
+        <!-- Button 1 – Follow the creator -->
+        <a href="https://www.instagram.com/_vinnu___yadav_?igsh=MTE5cmcyM3BxNjgweA=="
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn--cyan">
+        <span class="btn-icon">✦</span>
+        follow the creator
+    </a>
+
+    <!-- Button 2 – Follow the web designer -->
+    <a href="https://www.instagram.com/_website___builder_?igsh=MWJlMDE2aDEwdjVmYw=="
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn btn--magenta">
+    <span class="btn-icon">◆</span>
+    follow the web designer
+</a>
+
+<!-- Button 3 – Get some templates for free -->
+<a href="https://www.example.com"
+target="_blank"
+rel="noopener noreferrer"
+class="btn btn--purple">
+<span class="btn-icon">⬡</span>
+get some templates for free
+</a>
+
+</div>
+
+<!-- ─── Tiny credit ─── -->
+<div class="credit">⚡ neon grid · cyber phunked ⚡</div>
+
+</body>
+</html>
